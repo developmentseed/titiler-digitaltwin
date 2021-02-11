@@ -115,8 +115,7 @@ class DynamicDigitalTwinBackend(BaseBackend):
         init=False, default=(-180, -90, 180, 90)
     )
 
-    # The min/max zoom is defined by the COG min/max zooms.
-    minzoom: int = attr.ib(default=6)
+    minzoom: int = attr.ib(default=5)
     maxzoom: int = attr.ib(default=10)
 
     # Because we are not using mosaicjson we are not limited to the WebMercator TMS

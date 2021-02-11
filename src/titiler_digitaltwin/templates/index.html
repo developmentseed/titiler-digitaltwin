@@ -149,8 +149,9 @@
         var map = new mapboxgl.Map({
             container: 'map',
             style: { version: 8, sources: {}, layers: [] },
-            center: [0, 0],
-            zoom: 1
+            center: [0, 40],
+            zoom: 6,
+            minZoom: 5,
         })
 
         const addMosaic = () => {
@@ -163,6 +164,7 @@
             const year = e.getAttribute('year')
             const month = e.getAttribute('month')
             const day = e.getAttribute('day')
+
             // Here we can change the date and the bands we want to fetch
             return fetch(`{{ endpoint }}tilejson.json?bands=B04,B03,B02&color_formula=gamma RGB 3.5, saturation 1.7, sigmoidal RGB 15 0.35&year=${year}&month=${month}&day=${day}`)
                 .then(res => {
