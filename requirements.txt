@@ -1,0 +1,6 @@
+git+https://github.com/cogeotiff/rio-tiler.git@alignedBoundsWithBlock
+git+https://github.com/developmentseed/cogeo-mosaic.git
+
+rasterio==1.1.8
+
+git+https://github.com/developmentseed/titiler.git
