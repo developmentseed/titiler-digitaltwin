@@ -11,8 +11,6 @@ see: https://registry.opendata.aws/sentinel-s2-l2a-mosaic-120/
 
 ## Deploy
 
-To make the deployement fast and easy we are using a custom lambda layer: `arn:aws:lambda:us-east-1:552819999234:layer:titiler_test:1`
-
 ```bash
 # Install AWS CDK requirements
 $ pip install -r stack/requirements.txt
@@ -31,6 +29,6 @@ $ AWS_DEFAULT_REGION=eu-central-1 AWS_REGION=eu-central-1 cdk deploy
 
 ```bash
 $ git clone https://github.com/developmentseed/titiler-digitaltwin
-$ pip install -r requirements.txt
-$ cd src && uvicorn titiler_digitaltwin.main:app --reload
+$ pip install -e .
+$ uvicorn titiler_digitaltwin.main:app --reload
 ```

@@ -1,5 +1,6 @@
 """Construct App."""
 
+import os
 from typing import Any, List, Optional
 
 from aws_cdk import aws_apigatewayv2 as apigw
@@ -37,7 +38,6 @@ class titilerLambdaStack(core.Stack):
         runtime: aws_lambda.Runtime = aws_lambda.Runtime.PYTHON_3_8,
         concurrent: Optional[int] = None,
         permissions: Optional[List[iam.PolicyStatement]] = None,
-        layer_arn: Optional[str] = None,
         env: dict = {},
         code_dir: str = "./",
         **kwargs: Any,
@@ -51,20 +51,21 @@ class titilerLambdaStack(core.Stack):
             self,
             f"{id}-lambda",
             runtime=runtime,
-            code=aws_lambda.Code.from_asset("src"),
-            handler="titiler_digitaltwin.main.handler",
+            code=aws_lambda.Code.from_asset(
+                path=os.path.abspath(code_dir),
+                bundling=core.BundlingOptions(
+                    image=core.BundlingDockerImage.from_asset(
+                        os.path.abspath(code_dir), file="Dockerfile",
+                    ),
+                    command=["bash", "-c", "cp -R /var/task/. /asset-output/."],
+                ),
+            ),
+            handler="titiler_digitaltwin.handler.handler",
             memory_size=memory,
             reserved_concurrent_executions=concurrent,
             timeout=core.Duration.seconds(timeout),
             environment={**DEFAULT_ENV, **env},
         )
-
-        if layer_arn:
-            lambda_function.add_layers(
-                aws_lambda.LayerVersion.from_layer_version_arn(
-                    self, layer_arn.split(":")[-2], layer_arn
-                )
-            )
 
         for perm in permissions:
             lambda_function.add_to_role_policy(perm)
@@ -109,7 +110,6 @@ titilerLambdaStack(
     timeout=settings.timeout,
     concurrent=settings.max_concurrent,
     permissions=perms,
-    layer_arn="arn:aws:lambda:eu-central-1:552819999234:layer:titiler_dt:1",
     env=settings.additional_env,
 )
 

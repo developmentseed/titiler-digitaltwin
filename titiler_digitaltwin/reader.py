@@ -2,31 +2,32 @@
 
 import json
 import pathlib
-from typing import Any, Dict, List, Tuple, Type
+from typing import Dict, List, Tuple, Type
 
 import attr
 from cogeo_mosaic.backends.base import BaseBackend
-from cogeo_mosaic.errors import NoAssetFoundError
 from cogeo_mosaic.mosaic import MosaicJSON
 from morecantile import TileMatrixSet
-from pygeos import Geometry, STRtree, points, polygons
+from pygeos import Geometry, STRtree, multipolygons, points, polygons
 from rasterio.features import bounds as featureBounds
 from rio_tiler import constants
 from rio_tiler.constants import WEB_MERCATOR_TMS
 from rio_tiler.errors import InvalidBandName
 from rio_tiler.io import BaseReader, COGReader, MultiBandReader
-from rio_tiler.models import ImageData
-from rio_tiler.mosaic import mosaic_reader
-from rio_tiler.tasks import multi_values
 
 # Load the grid from local geojson
-with open(f"{str(pathlib.Path(__file__).parent)}/data/MGRS.geojson") as f:
+with open(f"{str(pathlib.Path(__file__).parent)}/data/grid.geojson") as f:
     mgrs_grid = json.load(f)
 
 # Create List of grid names and STRtree
-grid_names = [feat["properties"]["GZD"] for feat in mgrs_grid["features"]]
+grid_names = [feat["properties"]["name"] for feat in mgrs_grid["features"]]
 tree = STRtree(
-    [polygons(feat["geometry"]["coordinates"][0]) for feat in mgrs_grid["features"]]
+    [
+        polygons(feat["geometry"]["coordinates"][0])
+        if feat["geometry"]["type"] == "Polygon"
+        else multipolygons(feat["geometry"]["coordinates"][0])
+        for feat in mgrs_grid["features"]
+    ]
 )
 
 default_bands = (
@@ -36,13 +37,14 @@ default_bands = (
     "B08",
     "B11",
     "B12",
+    "dataMask",
 )
 
 
 def get_grid_bbox(name: str) -> Tuple[float, float, float, float]:
     """Get grid bbox."""
     feat = list(
-        filter(lambda x: x["properties"]["GZD"] == name, mgrs_grid["features"])
+        filter(lambda x: x["properties"]["name"] == name, mgrs_grid["features"])
     )[0]
     return featureBounds(feat["geometry"])
 
@@ -50,7 +52,6 @@ def get_grid_bbox(name: str) -> Tuple[float, float, float, float]:
 @attr.s
 class S2DigitalTwinReader(MultiBandReader):
     """Sentinel DigitalTwin Reader
-
     Note: this should be added to rio-tiler-pds
     """
 
@@ -61,7 +62,7 @@ class S2DigitalTwinReader(MultiBandReader):
     reader: Type[COGReader] = attr.ib(default=COGReader)
 
     # Nodata seems to be missing (might be added in the second iteration)
-    reader_options: Dict = attr.ib({"nodata": 0})
+    reader_options: Dict = attr.ib(default={"nodata": 0})
 
     tms: TileMatrixSet = attr.ib(default=constants.WEB_MERCATOR_TMS)
     minzoom: int = attr.ib(default=6)
@@ -100,7 +101,8 @@ class DynamicDigitalTwinBackend(BaseBackend):
 
     Examples:
         >>> with DynamicDigitalTwinBackend(reader_options={"year": 2019, "month": 1, "day": 1}) as mosaic:
-            img = mosaic.tile(482, 164, 9, bands="B02")
+            img, assets = mosaic.tile(482, 164, 9, bands="B02")
+            value = mosaic.point(0, 40, bands="B02")
 
     """
 
@@ -175,40 +177,6 @@ class DynamicDigitalTwinBackend(BaseBackend):
         """Find assets."""
         idx = tree.query(geom, predicate="intersects").tolist()
         return [grid_names[n] for n in idx]
-
-    def tile(  # type: ignore
-        self, x: int, y: int, z: int, reverse: bool = False, **kwargs: Any,
-    ) -> Tuple[ImageData, List[str]]:
-        """Get Tile from multiple observation."""
-        mosaic_assets = self.assets_for_tile(x, y, z)
-        if not mosaic_assets:
-            raise NoAssetFoundError(f"No assets found for tile {z}-{x}-{y}")
-
-        if reverse:
-            mosaic_assets = list(reversed(mosaic_assets))
-
-        def _reader(asset: str, x: int, y: int, z: int, **kwargs: Any) -> ImageData:
-            with self.reader(asset, **self.reader_options) as src_dst:
-                return src_dst.tile(x, y, z, **kwargs)
-
-        return mosaic_reader(mosaic_assets, _reader, x, y, z, **kwargs)
-
-    def point(
-        self, lon: float, lat: float, reverse: bool = False, **kwargs: Any,
-    ) -> Dict:
-        """Get Point value from multiple observation."""
-        mosaic_assets = self.assets_for_point(lon, lat)
-        if not mosaic_assets:
-            raise NoAssetFoundError(f"No assets found for point ({lon},{lat})")
-
-        if reverse:
-            mosaic_assets = list(reversed(mosaic_assets))
-
-        def _reader(asset: str, lon: float, lat: float, **kwargs) -> Dict:
-            with self.reader(asset, **self.reader_options) as src_dst:
-                return src_dst.point(lon, lat, **kwargs)
-
-        return multi_values(mosaic_assets, _reader, lon, lat, **kwargs)
 
     @property
     def _quadkeys(self) -> List[str]:

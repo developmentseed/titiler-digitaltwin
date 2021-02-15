@@ -1,7 +1,7 @@
 """titiler-digitaltwin custom mosaic endpoint factory."""
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable, Dict, Optional, Type
 from urllib.parse import urlencode
 
@@ -10,13 +10,8 @@ from cogeo_mosaic.backends import BaseBackend
 from morecantile import TileMatrixSet
 from rio_tiler.constants import MAX_THREADS
 from rio_tiler.io import BaseReader
-from titiler import utils
-from titiler.dependencies import DefaultDependency, TMSParams
-from titiler.endpoints.factory import (
-    BaseTilerFactory,
-    default_deps_type,
-    img_endpoint_params,
-)
+from titiler.dependencies import BandsExprParams, DefaultDependency, TMSParams
+from titiler.endpoints.factory import BaseTilerFactory, img_endpoint_params
 from titiler.errors import RasterioIOError, TileOutsideBounds
 from titiler.models.mapbox import TileJSON
 from titiler.resources.enums import ImageType, PixelSelectionMethod
@@ -30,27 +25,6 @@ from starlette.responses import Response
 
 
 @dataclass
-class BandsExprParams(DefaultDependency):
-    """Band names and Expression parameters."""
-
-    bands: Optional[str] = Query(
-        None, title="bands names", description="comma (',') delimited bands names.",
-    )
-    expression: Optional[str] = Query(
-        None,
-        title="Band Math expression",
-        description="rio-tiler's band math expression.",
-    )
-
-    def __post_init__(self):
-        """Post Init."""
-        if self.bands is not None:
-            self.kwargs["bands"] = self.bands.split(",")
-        if self.expression is not None:
-            self.kwargs["expression"] = self.expression
-
-
-@dataclass
 class PathParams:
     """Create dataset path from args"""
 
@@ -61,18 +35,18 @@ class PathParams:
 
 @dataclass
 class MosaicTilerFactory(BaseTilerFactory):
+    """Custom Mosaic Tiler.
+
+    We need a custom Mosaic Tiler because we need to be able to set the `reader_options`
+    dynamically with `year, month, day` provided on each requests.
+
     """
-    MosaicTiler Factory.
 
-    The main difference with titiler.endpoint.factory.TilerFactory is that this factory
-    needs a reader (MosaicBackend) and a dataset_reader (BaseReader).
-    """
+    reader: BaseBackend = DynamicDigitalTwinBackend
+    dataset_reader: Type[BaseReader] = S2DigitalTwinReader
 
-    reader: BaseBackend = field(default=DynamicDigitalTwinBackend)
-    dataset_reader: Type[BaseReader] = field(default=S2DigitalTwinReader)
-
-    path_dependency: Type[PathParams] = field(default=PathParams)
-    layer_dependency: default_deps_type = field(default=BandsExprParams)
+    path_dependency: Type[PathParams] = PathParams
+    layer_dependency: Type[DefaultDependency] = BandsExprParams
 
     # BaseBackend does not support other TMS than WebMercator
     tms_dependency: Callable[..., TileMatrixSet] = TMSParams
@@ -124,66 +98,48 @@ class MosaicTilerFactory(BaseTilerFactory):
             kwargs: Dict = Depends(self.additional_dependency),
         ):
             """Create map tile from a COG."""
-            timings = []
-            headers: Dict[str, str] = {}
-
             tilesize = scale * 256
 
             threads = int(os.getenv("MOSAIC_CONCURRENCY", MAX_THREADS))
-            with utils.Timer() as t:
-                with rasterio.Env(**self.gdal_config):
-                    with self.reader(
-                        reader=self.dataset_reader,
-                        reader_options={
-                            "year": src_path.year,
-                            "month": src_path.month,
-                            "day": src_path.day,
-                        },
-                    ) as src_dst:
-                        mosaic_read = t.from_start
-                        timings.append(("mosaicread", round(mosaic_read * 1000, 2)))
-
-                        data, _ = src_dst.tile(
-                            x,
-                            y,
-                            z,
-                            pixel_selection=pixel_selection.method(),
-                            threads=threads,
-                            tilesize=tilesize,
-                            # because the mosaic is dynamic, there migth be some time where the file just doesn't exist
-                            allowed_exceptions=(RasterioIOError, TileOutsideBounds,),
-                            **layer_params.kwargs,
-                            **dataset_params.kwargs,
-                            **kwargs,
-                        )
-            timings.append(("dataread", round((t.elapsed - mosaic_read) * 1000, 2)))
+            with rasterio.Env(**self.gdal_config):
+                with self.reader(
+                    reader=self.dataset_reader,
+                    reader_options={
+                        "year": src_path.year,
+                        "month": src_path.month,
+                        "day": src_path.day,
+                    },
+                ) as src_dst:
+                    data, _ = src_dst.tile(
+                        x,
+                        y,
+                        z,
+                        pixel_selection=pixel_selection.method(),
+                        threads=threads,
+                        tilesize=tilesize,
+                        # because the mosaic is dynamic, there migth be some time where the file just doesn't exist
+                        allowed_exceptions=(RasterioIOError, TileOutsideBounds,),
+                        **layer_params.kwargs,
+                        **dataset_params.kwargs,
+                        **kwargs,
+                    )
 
             if not format:
                 format = ImageType.jpeg if data.mask.all() else ImageType.png
 
-            with utils.Timer() as t:
-                image = data.post_process(
-                    in_range=render_params.rescale_range,
-                    color_formula=render_params.color_formula,
-                )
-            timings.append(("postprocess", round(t.elapsed * 1000, 2)))
-
-            with utils.Timer() as t:
-                content = image.render(
-                    add_mask=render_params.return_mask,
-                    img_format=format.driver,
-                    colormap=render_params.colormap,
-                    **format.profile,
-                )
-            timings.append(("format", round(t.elapsed * 1000, 2)))
-
-            headers["Server-Timing"] = ", ".join(
-                [f"{name};dur={time}" for (name, time) in timings]
+            image = data.post_process(
+                in_range=render_params.rescale_range,
+                color_formula=render_params.color_formula,
             )
 
-            headers["X-Assets"] = ",".join(data.assets)
+            content = image.render(
+                add_mask=render_params.return_mask,
+                img_format=format.driver,
+                colormap=render_params.colormap,
+                **format.profile,
+            )
 
-            return Response(content, media_type=format.mimetype, headers=headers)
+            return Response(content, media_type=format.mimetype)
 
     def tilejson(self):  # noqa: C901
         """Add tilejson endpoint."""
@@ -256,7 +212,7 @@ class MosaicTilerFactory(BaseTilerFactory):
                 center = list(src_dst.center)
                 if minzoom:
                     center[-1] = minzoom
-                tjson = {
+                return {
                     "bounds": src_dst.bounds,
                     "center": tuple(center),
                     "minzoom": minzoom if minzoom is not None else src_dst.minzoom,
@@ -264,5 +220,3 @@ class MosaicTilerFactory(BaseTilerFactory):
                     "name": "Sentinel 2 Digital Twin",
                     "tiles": [tiles_url],
                 }
-
-            return tjson

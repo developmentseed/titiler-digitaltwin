@@ -1,0 +1,5 @@
+include titiler_digitaltwin/data/*.geojson
+include titiler_digitaltwin/templates/*.html
+
+recursive-exclude tests *
+recursive-exclude stack *
