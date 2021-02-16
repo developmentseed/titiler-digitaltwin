@@ -27,27 +27,6 @@
             width: 100%;
         }
 
-        .loading-map {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            color: #FFF;
-            background-color: #000;
-            text-align: center;
-            opacity: 0.5;
-            font-size: 45px;
-        }
-
-        .loading-map.off {
-            opacity: 0;
-            -o-transition: all .5s ease;
-            -webkit-transition: all .5s ease;
-            -moz-transition: all .5s ease;
-            -ms-transition: all .5s ease;
-            transition: all ease .5s;
-            visibility: hidden;
-        }
-
         .middle-center {
             position: absolute;
             top: 50%;
@@ -60,9 +39,16 @@
             padding: 5px;
         }
 
+        .devseed {
+            position: absolute;
+            right: 10px;
+            bottom: 0px;
+            display: inline;
+        }
+
         #menu {
-            left: 5px;
-            top: 5px;
+            left: 0;
+            top: 0;
             -o-transition: all .5s ease;
             -webkit-transition: all .5s ease;
             -moz-transition: all .5s ease;
@@ -70,72 +56,274 @@
             transition: all ease .5s;
         }
 
-        .devseed {
-            position: absolute;
-            right: 10px;
-            bottom: 0px;
-            display: inline;
+        #toolbar {
+            height: 35px;
         }
+
+        #toolbar li {
+            display: block;
+            color: #fff;
+            background-color: #556671;
+            font-weight: 700;
+            font-size: 12px;
+            padding: 5px;
+            height: 100%;
+            width: 100%;
+            text-transform: uppercase;
+            text-align: center;
+            text-decoration: none;
+            outline: 0;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                    user-select: none;
+        }
+
+        #toolbar li svg {
+            font-size: 25px;
+            line-height: 25px;
+            padding-bottom: 0;
+        }
+
+        #toolbar li:hover {
+            background-color: #28333b;
+        }
+
+        #toolbar li.active {
+            color: #000;
+            background-color: #fff;
+        }
+
+        #toolbar li.disabled {
+            pointer-events:none;
+            opacity:0.4;
+        }
+
+        #menu-content section {
+            display: none;
+        }
+
+        #menu-content section.active {
+            display: inherit;
+        }
+
+        #hide-arrow {
+            -o-transition: all .5s ease;
+            -webkit-transition: all .5s ease;
+            -moz-transition: all .5s ease;
+            -ms-transition: all .5s ease;
+            transition: all ease .5s;
+        }
+
+        #hide-arrow.off {
+            transform: rotate(-180deg);
+        }
+
+        #btn-hide {
+            position: absolute;
+            top: 0;
+            height: 35px;
+            font-size: 35px;
+            line-height: 35px;
+            vertical-align: middle;
+            right: -35px;
+            color: #28333b;
+            background-color: #fff;
+        }
+
+        #btn-hide:hover {
+            color: #fff;
+            background-color: #28333b;
+            cursor: pointer;
+        }
+
+        .line-red {
+            fill: none;
+            stroke: red;
+            stroke-width: 1.5px;
+        }
+        .line-green {
+            fill: none;
+            stroke: green;
+            stroke-width: 1.5px;
+        }
+        .line-blue {
+            fill: none;
+            stroke: blue;
+            stroke-width: 1.5px;
+        }
+
     </style>
 </head>
 
 <body>
-    <div id='menu' class='flex-child absolute z2'>
-        <div class='select-container wmax-full color-white'>
-            <select id='date-selector' class='select select--s select--stroke wmax-full color-white'>
-                <option year="2019" month="1" day="1">2019-01-01</option>
-                <option year="2019" month="1" day="11">2019-01-11</option>
-                <option year="2019" month="1" day="21">2019-01-21</option>
-                <option year="2019" month="1" day="31">2019-01-31</option>
-                <option year="2019" month="2" day="10">2019-02-10</option>
-                <option year="2019" month="2" day="20">2019-02-20</option>
-                <option year="2019" month="3" day="2">2019-03-02</option>
-                <option year="2019" month="3" day="12">2019-03-12</option>
-                <option year="2019" month="3" day="23">2019-03-22</option>
-                <option year="2019" month="4" day="1">2019-04-01</option>
-                <option year="2019" month="4" day="11">2019-04-11</option>
-                <option year="2019" month="4" day="21">2019-04-21</option>
-                <option year="2019" month="5" day="1">2019-05-01</option>
-                <option year="2019" month="5" day="11">2019-05-11</option>
-                <option year="2019" month="5" day="21">2019-05-21</option>
-                <option year="2019" month="5" day="31">2019-05-31</option>
-                <option year="2019" month="6" day="10">2019-06-10</option>
-                <option year="2019" month="6" day="20">2019-06-20</option>
-                <option year="2019" month="6" day="30">2019-06-30</option>
-                <option year="2019" month="7" day="10">2019-07-10</option>
-                <option year="2019" month="7" day="20">2019-07-20</option>
-                <option year="2019" month="7" day="30">2019-07-30</option>
-                <option year="2019" month="8" day="9">2019-08-09</option>
-                <option year="2019" month="8" day="19">2019-08-19</option>
-                <option year="2019" month="8" day="29">2019-08-29</option>
-                <option year="2019" month="9" day="8">2019-09-08</option>
-                <option year="2019" month="9" day="18">2019-09-18</option>
-                <option year="2019" month="9" day="28">2019-09-28</option>
-                <option year="2019" month="10" day="8">2019-10-08</option>
-                <option year="2019" month="10" day="18">2019-10-18</option>
-                <option year="2019" month="10" day="28">2019-10-28</option>
-                <option year="2019" month="11" day="7">2019-11-07</option>
-                <option year="2019" month="11" day="17">2019-11-17</option>
-                <option year="2019" month="11" day="27">2019-11-27</option>
-                <option year="2019" month="12" day="7">2019-12-07</option>
-                <option year="2019" month="12" day="17">2019-12-17</option>
-                <option year="2019" month="12" day="27">2019-12-27</option>
-            </select>
-            <div class='select-arrow color-black'></div>
+    <div id='menu' class='flex-child w240 absolute bg-white z2'>
+        <ul id='toolbar' class='grid'>
+            <li id='3b' class="col col--4 active" title="rgb" onclick="switchPane(this)">
+                <svg class='icon icon--l inline-block'>
+                    <use xlink:href='#icon-menu' />
+                </svg>
+            </li>
+            <li id='1b' class="col col--4" title="band" onclick="switchPane(this)">
+                <svg class='icon icon--l inline-block'>
+                    <use xlink:href='#icon-minus' />
+                </svg>
+            </li>
+            <li id='expression' class="col col--4" title="expression" onclick="switchPane(this)">
+                <svg class='icon icon--l inline-block'>
+                    <use xlink:href='#icon-sprocket' />
+                </svg>
+            </li>
+        </ul>
+
+        <div id='menu-content' class='relative'>
+
+            <!-- RGB Selection -->
+            <section id='3b-section' class='px12 pt12 pb6 active'>
+                <div class='txt-h5 mb6 color-black'><svg class='icon icon--l inline-block'>
+                        <use xlink:href='#icon-layers' />
+                    </svg> RGB</div>
+                <div id='rgb-buttons' class='align-center px6 py6'>
+                    <div class='select-container'>
+                        <select id='r-selector' class='select select--s select--stroke wmax-full color-red'>
+                            <option band='B02'>blue (B02)</option>
+                            <option band='B03'>green (B03)</option>
+                            <option band='B04' selected='selected'>red (B04)</option>
+                            <option band='B08'>nir (B08)</option>
+                            <option band='B11'>swir16 (B11)</option>
+                            <option band='B12'>swir22 (B12)</option>
+                        </select>
+                        <div class='select-arrow color-black'></div>
+                    </div>
+
+                    <div class='select-container'>
+                        <select id='g-selector' class='select select--s select--stroke wmax-full color-green'>
+                            <option band='B02'>blue (B02)</option>
+                            <option band='B03' selected='selected'>green (B03)</option>
+                            <option band='B04'>red (B04)</option>
+                            <option band='B08'>nir (B08)</option>
+                            <option band='B11'>swir16 (B11)</option>
+                            <option band='B12'>swir22 (B12)</option>
+                        </select>
+                        <div class='select-arrow color-black'></div>
+                    </div>
+
+                    <div class='select-container'>
+                        <select id='b-selector' class='select select--s select--stroke wmax-full color-blue'>
+                            <option band='B02' selected='selected'>blue (B02)</option>
+                            <option band='B03'>green (B03)</option>
+                            <option band='B04'>red (B04)</option>
+                            <option band='B08'>nir (B08)</option>
+                            <option band='B11'>swir16 (B11)</option>
+                            <option band='B12'>swir22 (B12)</option>
+                        </select>
+                        <div class='select-arrow color-black'></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 1 Band Selection -->
+            <section id='1b-section' class='px12 pt12 pb6'>
+                <div class='txt-h5 mb6 color-black'>
+                    <svg class='icon icon--l inline-block'>
+                        <use xlink:href='#icon-layers' />
+                    </svg> Layers
+                </div>
+                <div id='layer-buttons' class='px6 py6'>
+                    <div class='select-container wmax-full'>
+                        <select id='layer-selector' class='select select--s select--stroke wmax-full color-black'>
+                            <option band='B02' selected='selected'>blue (B02)</option>
+                            <option band='B03'>green (B03)</option>
+                            <option band='B04'>red (B04)</option>
+                            <option band='B08'>nir (B08)</option>
+                            <option band='B11'>swir16 (B11)</option>
+                            <option band='B12'>swir22 (B12)</option>
+                        </select>
+                        <div class='select-arrow color-black'></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expression -->
+            <section id='expression-section' class='px12 pt12 pb6'>
+                <div class='txt-h5 mb6 color-black'>
+                    <svg class='icon icon--l inline-block'>
+                        <use xlink:href='#icon-layers' />
+                    </svg> Expression
+                </div>
+                <div class='px6 py6'>
+                    <input id="expression-value" class='input input--s wmax-full inline-block align-center color-black' value='(B08-B04)/(B08+B04)' />
+                </div>
+                <ul>
+                    <li>blue - B02</li>
+                    <li>green - B03</li>
+                    <li>red - B04</li>
+                    <li>nir - B08</li>
+                    <li>swir16 - B11</li>
+                    <li>swir22 - B12</li>
+                </ul>
+            </section>
+
+            <section class='px12 pt12 pb6 active'>
+                <div class='txt-h5 mb6 color-black'>
+                    <svg class='icon icon--l inline-block'>
+                        <use xlink:href='#icon-clock' />
+                    </svg> Date
+                </div>
+                <div id='layer-buttons' class='align-center px6 py6'>
+                    <div class='select-container wmax-full color-white'>
+                        <select id='date-selector' class='select select--s select--stroke wmax-full color-black'>
+                            <option year="2019" month="1" day="1">2019-01-01</option>
+                            <option year="2019" month="1" day="11">2019-01-11</option>
+                            <option year="2019" month="1" day="21">2019-01-21</option>
+                            <option year="2019" month="1" day="31">2019-01-31</option>
+                            <option year="2019" month="2" day="10">2019-02-10</option>
+                            <option year="2019" month="2" day="20">2019-02-20</option>
+                            <option year="2019" month="3" day="2">2019-03-02</option>
+                            <option year="2019" month="3" day="12">2019-03-12</option>
+                            <option year="2019" month="3" day="23">2019-03-22</option>
+                            <option year="2019" month="4" day="1">2019-04-01</option>
+                            <option year="2019" month="4" day="11">2019-04-11</option>
+                            <option year="2019" month="4" day="21">2019-04-21</option>
+                            <option year="2019" month="5" day="1">2019-05-01</option>
+                            <option year="2019" month="5" day="11">2019-05-11</option>
+                            <option year="2019" month="5" day="21">2019-05-21</option>
+                            <option year="2019" month="5" day="31">2019-05-31</option>
+                            <option year="2019" month="6" day="10">2019-06-10</option>
+                            <option year="2019" month="6" day="20">2019-06-20</option>
+                            <option year="2019" month="6" day="30">2019-06-30</option>
+                            <option year="2019" month="7" day="10">2019-07-10</option>
+                            <option year="2019" month="7" day="20">2019-07-20</option>
+                            <option year="2019" month="7" day="30">2019-07-30</option>
+                            <option year="2019" month="8" day="9">2019-08-09</option>
+                            <option year="2019" month="8" day="19">2019-08-19</option>
+                            <option year="2019" month="8" day="29">2019-08-29</option>
+                            <option year="2019" month="9" day="8">2019-09-08</option>
+                            <option year="2019" month="9" day="18">2019-09-18</option>
+                            <option year="2019" month="9" day="28">2019-09-28</option>
+                            <option year="2019" month="10" day="8">2019-10-08</option>
+                            <option year="2019" month="10" day="18">2019-10-18</option>
+                            <option year="2019" month="10" day="28">2019-10-28</option>
+                            <option year="2019" month="11" day="7">2019-11-07</option>
+                            <option year="2019" month="11" day="17">2019-11-17</option>
+                            <option year="2019" month="11" day="27">2019-11-27</option>
+                            <option year="2019" month="12" day="7">2019-12-07</option>
+                            <option year="2019" month="12" day="17">2019-12-17</option>
+                            <option year="2019" month="12" day="27">2019-12-27</option>
+                        </select>
+                        <div class='select-arrow color-black'></div>
+                    </div>
+                </div>
+                <button id="apply" class='btn bts--xs btn--stroke bg-darken25-on-hover inline-block txt-s color-black mt12'>Apply</button>
+
+            </section>
         </div>
     </div>
 
-    <div id='map'>
-        <div id='loader' class="loading-map z2 off">
-            <div class="middle-center">
-                <div class="round animation-spin animation--infinite animation--speed-1">
-                    <svg class='icon icon--l inline-block'>
-                        <use xlink:href='#icon-satellite' />
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id='map'></div>
+
     <h4 class="devseed">
         <span>Created by </span>
         <a href="https://www.developmentseed.org/" target="_blank">
@@ -143,8 +331,9 @@
                 alt="Development Seed">
         </a>
     </h4>
+
     <script>
-        const apiEndpoint = 'https://3aclcah7ad.execute-api.us-east-1.amazonaws.com'
+        const apiEndpoint = '{{ endpoint }}'
 
         var map = new mapboxgl.Map({
             container: 'map',
@@ -154,19 +343,59 @@
             minZoom: 5,
         })
 
+        const switchPane = (event) => {
+            const cur = document.getElementById('toolbar').querySelector(".active")
+            const activeViz = cur.id
+            const nextViz = event.id
+            cur.classList.toggle('active')
+            event.classList.toggle('active')
+
+            const curSection = document.getElementById(`${activeViz}-section`)
+            curSection.classList.toggle('active')
+            const nextSection = document.getElementById(`${nextViz}-section`)
+            nextSection.classList.toggle('active')
+            addMosaic()
+        }
+
         const addMosaic = () => {
             if (map.getLayer('raster')) map.removeLayer('raster')
             if (map.getSource('raster')) map.removeSource('raster')
 
-            document.getElementById('loader').classList.toggle('off')
+            const params = {}
+
+            const rasterType = document.getElementById('toolbar').querySelector(".active").id
+            switch (rasterType) {
+                case '1b':
+                    const active_layer = document.getElementById('layer-selector')[document.getElementById('layer-selector').selectedIndex]
+                    params.bands = active_layer.getAttribute('band')
+                    params.color_formula = 'gamma R 3.5'
+
+                    break
+                case '3b':
+                    const r = document.getElementById('r-selector').selectedOptions[0].getAttribute('band')
+                    const g = document.getElementById('g-selector').selectedOptions[0].getAttribute('band')
+                    const b = document.getElementById('b-selector').selectedOptions[0].getAttribute('band')
+                    params.bands = `${r},${g},${b}`
+                    params.color_formula = 'gamma RGB 3.5, saturation 1.7, sigmoidal RGB 15 0.35'
+                    break
+                case 'expression':
+                    params.expression = encodeURIComponent(document.getElementById('expression-value').value)
+                    params.rescale  = '-1,1'
+                    params.color_map = 'viridis'
+                    break
+                default:
+                    throw new Error(`Invalid ${rasterType}`)
+            }
 
             const e = document.getElementById('date-selector').selectedOptions[0]
-            const year = e.getAttribute('year')
-            const month = e.getAttribute('month')
-            const day = e.getAttribute('day')
+            params.year = e.getAttribute('year')
+            params.month = e.getAttribute('month')
+            params.day = e.getAttribute('day')
 
-            // Here we can change the date and the bands we want to fetch
-            return fetch(`{{ endpoint }}tilejson.json?bands=B04,B03,B02&color_formula=gamma RGB 3.5, saturation 1.7, sigmoidal RGB 15 0.35&year=${year}&month=${month}&day=${day}`)
+            const url_params = Object.keys(params).map(i => `${i}=${params[i]}`).join('&')
+            let url = `${apiEndpoint}/tilejson.json?${url_params}`
+
+            return fetch(url)
                 .then(res => {
                     if (res.ok) return res.json()
                     throw new Error('Network response was not ok.')
@@ -187,15 +416,18 @@
                         type: 'raster',
                         source: 'raster'
                     })
-
-                    document.getElementById('loader').classList.toggle('off')
-                    map.zoomTo(6)
                 })
                 .catch(err => {
                     console.warn(err)
                 })
         }
 
+        document.getElementById('apply').addEventListener('click', () => {
+            addMosaic()
+        })
+        document.getElementById('layer-selector').addEventListener('change', () => {
+            addMosaic()
+        })
         document.getElementById('date-selector').addEventListener('change', () => {
             addMosaic()
         })
