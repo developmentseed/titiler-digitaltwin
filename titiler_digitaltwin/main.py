@@ -43,7 +43,7 @@ if api_settings.cors_origins:
 app.add_middleware(BrotliMiddleware, minimum_size=0, gzip_fallback=True)
 app.add_middleware(CacheControlMiddleware, cachecontrol=api_settings.cachecontrol)
 if api_settings.debug:
-    app.add_middleware(LoggerMiddleware)
+    app.add_middleware(LoggerMiddleware, headers=True, querystrings=True)
     app.add_middleware(TotalTimeMiddleware)
 
 tms = TMSFactory()

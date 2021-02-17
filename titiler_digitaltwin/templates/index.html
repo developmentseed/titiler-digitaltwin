@@ -41,8 +41,8 @@
 
         .devseed {
             position: absolute;
-            right: 10px;
-            bottom: 0px;
+            left: 10px;
+            bottom: 0;
             display: inline;
         }
 
@@ -320,6 +320,7 @@
 
             </section>
         </div>
+        <div class='prose px12 py12 txt-s'>Deploy your own version: <a href='https://github.com/developmentseed/titiler-digitaltwin' target='_blank'>developmentseed/titiler-digitaltwin</a></div>
     </div>
 
     <div id='map'></div>
@@ -333,8 +334,6 @@
     </h4>
 
     <script>
-        const apiEndpoint = '{{ endpoint }}'
-
         var map = new mapboxgl.Map({
             container: 'map',
             style: { version: 8, sources: {}, layers: [] },
@@ -361,7 +360,9 @@
             if (map.getLayer('raster')) map.removeLayer('raster')
             if (map.getSource('raster')) map.removeSource('raster')
 
-            const params = {}
+            const params = {
+                'tile_format': 'jpg'
+            }
 
             const rasterType = document.getElementById('toolbar').querySelector(".active").id
             switch (rasterType) {
@@ -393,33 +394,22 @@
             params.day = e.getAttribute('day')
 
             const url_params = Object.keys(params).map(i => `${i}=${params[i]}`).join('&')
-            let url = `${apiEndpoint}/tilejson.json?${url_params}`
-
-            return fetch(url)
-                .then(res => {
-                    if (res.ok) return res.json()
-                    throw new Error('Network response was not ok.')
-                })
-                .then((data) => {
-                    map.addSource(
-                        'raster', {
-                        'type': 'raster',
-                        'tiles': data.tiles,
-                        'minzoom': data.minzoom,
-                        'maxzoom': data.maxzoom,
-                        'bounds': data.bounds,
-                        'tileSize': 256,
-                    }
-                    )
-                    map.addLayer({
-                        id: 'raster',
-                        type: 'raster',
-                        source: 'raster'
-                    })
-                })
-                .catch(err => {
-                    console.warn(err)
-                })
+            map.addSource(
+                'raster', {
+                    'type': 'raster',
+                    'tiles': [`{{ endpoint }}tiles/{z}/{x}/{y}.jpg?${url_params}`],
+                    'minzoom': 5,
+                    'maxzoom': 10,
+                    'bounds': [-180, -90, 180, 90],
+                    'tileSize': 256,
+                    'attribution': `CC-BY 4.0, Credit: Contains modified Copernicus data ${params.year} processed by <a href="https://www.sinergise.com">Sentinel Hub</a>`
+                }
+            )
+            map.addLayer({
+                id: 'raster',
+                type: 'raster',
+                source: 'raster'
+            })
         }
 
         document.getElementById('apply').addEventListener('click', () => {

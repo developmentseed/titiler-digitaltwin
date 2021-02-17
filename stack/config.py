@@ -14,7 +14,9 @@ class StackSettings(pydantic.BaseSettings):
     owner: Optional[str]
     client: Optional[str]
 
-    additional_env: Dict = {}
+    additional_env: Dict = {
+        "MAX_THREADS": "1",
+    }
 
     # add S3 bucket where TiTiler could do HEAD and GET Requests
     buckets: List = ["sentinel-s2-l2a-mosaic-120"]
