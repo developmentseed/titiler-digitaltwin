@@ -2,14 +2,7 @@
 
 from setuptools import find_packages, setup
 
-inst_reqs = [
-    # rasterio 1.2.0 wheels are built using GDAL 3.2 and PROJ 7 which we found having a
-    # performance downgrade: https://github.com/developmentseed/titiler/discussions/216
-    "rasterio==1.1.8",
-    # Here we use the master branch of TiTiler which has some improvement yet to be published.
-    "titiler @ git+https://github.com/developmentseed/titiler.git",
-    "mangum>=0.10",
-]
+inst_reqs = ["titiler==0.1.0", "mangum>=0.10"]
 
 
 setup(
