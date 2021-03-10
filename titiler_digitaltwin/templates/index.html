@@ -382,7 +382,7 @@
                 case 'expression':
                     params.expression = encodeURIComponent(document.getElementById('expression-value').value)
                     params.rescale  = '-1,1'
-                    params.color_map = 'viridis'
+                    params.colormap_name = 'viridis'
                     break
                 default:
                     throw new Error(`Invalid ${rasterType}`)

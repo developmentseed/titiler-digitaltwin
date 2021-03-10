@@ -108,15 +108,11 @@ class DynamicDigitalTwinBackend(BaseBackend):
 
     reader: Type[BaseReader] = attr.ib(default=S2DigitalTwinReader)
     reader_options: Dict = attr.ib(factory=dict)
-    backend_options: Dict = attr.ib(factory=dict)
-
-    query: Dict = attr.ib(factory=dict)
 
     # default values for bounds and zoom
     bounds: Tuple[float, float, float, float] = attr.ib(
         init=False, default=(-180, -90, 180, 90)
     )
-
     minzoom: int = attr.ib(default=5)
     maxzoom: int = attr.ib(default=10)
 

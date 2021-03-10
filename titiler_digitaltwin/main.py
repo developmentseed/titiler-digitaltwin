@@ -28,7 +28,7 @@ logging.getLogger("rio-tiler").setLevel(logging.ERROR)
 api_settings = ApiSettings()
 
 
-app = FastAPI(title="Sentinel 2 Digital Twin")
+app = FastAPI(title="Sentinel 2 Digital Twin", debug=api_settings.debug)
 add_exception_handlers(app, DEFAULT_STATUS_CODES)
 
 if api_settings.cors_origins:

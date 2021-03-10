@@ -2,7 +2,7 @@
 
 from setuptools import find_packages, setup
 
-inst_reqs = ["titiler==0.1.0", "mangum>=0.10"]
+inst_reqs = ["titiler==0.2.0", "mangum>=0.10"]
 
 
 setup(

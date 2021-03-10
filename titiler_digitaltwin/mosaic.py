@@ -26,7 +26,7 @@ from starlette.responses import Response
 
 @dataclass
 class PathParams:
-    """Create dataset path from args"""
+    """Custom Dataset Parameters"""
 
     year: int = Query(..., description="year")
     month: int = Query(..., description="month")
@@ -42,10 +42,14 @@ class MosaicTilerFactory(BaseTilerFactory):
 
     """
 
+    # Mosaic Backend
     reader: BaseBackend = DynamicDigitalTwinBackend
+
+    # Mosaic Asset's reader
     dataset_reader: Type[BaseReader] = S2DigitalTwinReader
 
     path_dependency: Type[PathParams] = PathParams
+
     layer_dependency: Type[DefaultDependency] = BandsExprParams
 
     # BaseBackend does not support other TMS than WebMercator
@@ -92,6 +96,7 @@ class MosaicTilerFactory(BaseTilerFactory):
             layer_params=Depends(self.layer_dependency),
             dataset_params=Depends(self.dataset_dependency),
             render_params=Depends(self.render_dependency),
+            colormap=Depends(self.colormap_dependency),
             pixel_selection: PixelSelectionMethod = Query(
                 PixelSelectionMethod.first, description="Pixel selection method."
             ),
@@ -104,6 +109,8 @@ class MosaicTilerFactory(BaseTilerFactory):
             with rasterio.Env(**self.gdal_config):
                 with self.reader(
                     reader=self.dataset_reader,
+                    # We pass year/month/day here
+                    # the Grid id will be dynamically defined withing mosaic backend's get_assets
                     reader_options={
                         "year": src_path.year,
                         "month": src_path.month,
@@ -135,11 +142,12 @@ class MosaicTilerFactory(BaseTilerFactory):
             content = image.render(
                 add_mask=render_params.return_mask,
                 img_format=format.driver,
-                colormap=render_params.colormap,
+                colormap=colormap,
                 **format.profile,
+                **render_params.kwargs,
             )
 
-            return Response(content, media_type=format.mimetype)
+            return Response(content, media_type=format.mediatype)
 
     def tilejson(self):  # noqa: C901
         """Add tilejson endpoint."""
@@ -175,6 +183,7 @@ class MosaicTilerFactory(BaseTilerFactory):
             layer_params=Depends(self.layer_dependency),  # noqa
             dataset_params=Depends(self.dataset_dependency),  # noqa
             render_params=Depends(self.render_dependency),  # noqa
+            colormap=Depends(self.colormap_dependency),  # noqa
             pixel_selection: PixelSelectionMethod = Query(
                 PixelSelectionMethod.first, description="Pixel selection method."
             ),  # noqa
